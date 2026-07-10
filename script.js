@@ -53,7 +53,7 @@
       key: 'cidade',
       texto: 'Em qual cidade está seu imóvel?',
       tipo: 'options',
-      opcoes: ['Matelândia', 'Medianeira', 'Missal', 'Céu Azul', 'Outra']
+      opcoes: ['Matelândia', 'Medianeira', 'Foz do Iguaçu', 'Céu Azul', 'São Miguel', 'Outra']
     },
     {
       key: 'bairro',
