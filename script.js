@@ -532,14 +532,17 @@
    * enviarDados()
    * ---------------------------------------------------------------
    * Ponto único de integração com back-end / banco de dados externo.
-   * Atualmente apenas registra os dados no console. No futuro, basta
-   * implementar aqui a chamada para o serviço desejado, por exemplo:
    *
-   *   // Google Sheets (via Apps Script Web App)
-   *   fetch('URL_DO_APPS_SCRIPT', {
-   *     method: 'POST',
-   *     body: JSON.stringify(dados)
-   *   });
+   * Envia os dados para a planilha do Google Sheets através de um
+   * Apps Script publicado como Web App. Basta colar a URL gerada
+   * na implantação em GOOGLE_SHEETS_URL logo abaixo.
+   *
+   * Passo a passo de como gerar essa URL: crie a planilha, vá em
+   * Extensões > Apps Script, cole o código do doPost() (arquivo
+   * apps-script-codigo.gs) e implante como "App da Web" com acesso
+   * "Qualquer pessoa". Copie a URL /exec gerada e cole abaixo.
+   *
+   * Outras integrações futuras podem ser adicionadas do mesmo jeito:
    *
    *   // Supabase
    *   fetch('https://SEU_PROJETO.supabase.co/rest/v1/avaliacoes', {
@@ -563,9 +566,26 @@
    *   });
    * ---------------------------------------------------------------
    */
+  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbya9nwE-9pT0qsn7u9eI9XnVnmQdT4L_Fahlq0DzOy4FGDs6GleMA5nGHBPmQTbyaqL/exec';
+
   function enviarDados() {
     console.log('Dados da avaliação prontos para envio:', dados);
-    // TODO: conectar ao serviço de armazenamento desejado (ver comentários acima).
+
+    if (!GOOGLE_SHEETS_URL || GOOGLE_SHEETS_URL.indexOf('COLE_AQUI') !== -1) {
+      console.warn('GOOGLE_SHEETS_URL ainda não foi configurada — dados não foram enviados à planilha.');
+      return;
+    }
+
+    // "no-cors" é necessário porque o Apps Script não retorna cabeçalhos
+    // CORS explícitos; o envio funciona normalmente mesmo sem ler a resposta.
+    fetch(GOOGLE_SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(dados)
+    }).catch((erro) => {
+      console.error('Falha ao enviar dados para a planilha:', erro);
+    });
   }
 
   /* -------------------------------------------------------------------
