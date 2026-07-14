@@ -35,7 +35,8 @@
     objetivo: "",
     nome: "",
     telefone: "",
-    email: ""
+    email: "",
+    consentimento: false
   };
 
   let currentStepIndex = 0;
@@ -139,6 +140,11 @@
       tipo: 'email',
       placeholder: 'seuemail@exemplo.com',
       opcional: true
+    },
+    {
+      key: 'consentimento',
+      texto: 'Para finalizar, preciso da sua confirmação abaixo.',
+      tipo: 'consent'
     }
   ];
 
@@ -242,6 +248,9 @@
         break;
       case 'phone':
         chatFooter.appendChild(criarCampoTelefone(pergunta));
+        break;
+      case 'consent':
+        chatFooter.appendChild(criarCampoConsentimento(pergunta));
         break;
     }
   }
@@ -398,6 +407,49 @@
 
     wrapper.appendChild(criarBarraAcoes(confirmar));
     setTimeout(() => input.focus(), 50);
+    return wrapper;
+  }
+
+  // --- Consentimento LGPD (checkbox obrigatório antes de enviar) ---
+  function criarCampoConsentimento(pergunta) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'field-wrap';
+
+    const label = document.createElement('label');
+    label.className = 'consent-label';
+    label.innerHTML = `
+      <input type="checkbox" class="consent-checkbox" id="consentCheckbox">
+      <span>Li e concordo com a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a> e autorizo a Tellus Imobiliária a entrar em contato comigo para apresentar minha avaliação.</span>
+    `;
+
+    const erro = document.createElement('p');
+    erro.className = 'field-error';
+    erro.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13"><path d="M8 1L15 14H1L8 1Z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 6V9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.7" r="0.8" fill="currentColor"/></svg> É preciso aceitar para concluir a avaliação.`;
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(erro);
+
+    const checkbox = label.querySelector('#consentCheckbox');
+    checkbox.checked = !!dados.consentimento;
+
+    const confirmar = () => {
+      if (!checkbox.checked) {
+        erro.classList.add('is-visible');
+        return;
+      }
+      erro.classList.remove('is-visible');
+      dados.consentimento = true;
+      chatBody.appendChild(criarBolhaUsuario('Concordo com os termos'));
+      scrollToBottom();
+      chatFooter.innerHTML = '';
+      avancar();
+    };
+
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) erro.classList.remove('is-visible');
+    });
+
+    wrapper.appendChild(criarBarraAcoes(confirmar, 'Concluir avaliação'));
     return wrapper;
   }
 
