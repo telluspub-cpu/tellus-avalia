@@ -42,6 +42,7 @@
   let currentStepIndex = 0;
   let selectedOptionValue = null;      // valor temporário para perguntas de escolha única
   let selectedChecklist = [];          // valores temporários para checklist
+  let horaInicioPreenchimento = null;  // marca o início do questionário, usado na proteção anti-spam
 
   /* -------------------------------------------------------------------
      2. DEFINIÇÃO DAS PERGUNTAS
@@ -167,12 +168,29 @@
      4. MOTOR DO CHAT
      ------------------------------------------------------------------- */
 
+  /**
+   * rastrearEvento()
+   * ---------------------------------------------------------------
+   * Envia um evento personalizado para o Google Analytics (GA4), se
+   * o gtag.js estiver carregado na página. Não envia nenhum dado
+   * pessoal (nome, telefone, e-mail) — apenas informações sobre o
+   * comportamento de navegação, para respeitar a privacidade.
+   * ---------------------------------------------------------------
+   */
+  function rastrearEvento(nome, parametros) {
+    if (typeof gtag === 'function') {
+      gtag('event', nome, parametros || {});
+    }
+  }
+
   // Inicia o questionário a partir do zero
   function iniciarQuestionario() {
     currentStepIndex = 0;
+    horaInicioPreenchimento = Date.now();
     heroSection.style.display = 'none';
     chatSection.classList.add('is-active');
     chatBody.innerHTML = '';
+    rastrearEvento('inicio_avaliacao');
     renderPergunta(currentStepIndex);
   }
 
@@ -182,6 +200,7 @@
     if (!pergunta) return;
 
     atualizarProgresso(index);
+    rastrearEvento('pergunta_visualizada', { numero_pergunta: index + 1, campo: pergunta.key });
     selectedOptionValue = null;
     selectedChecklist = Array.isArray(dados[pergunta.key]) ? [...dados[pergunta.key]] : [];
 
@@ -628,13 +647,26 @@
       return;
     }
 
+    // Sinais anti-spam: campo-armadilha (deve estar vazio) e tempo
+    // total de preenchimento (bots costumam enviar quase instantaneamente).
+    const campoArmadilha = document.getElementById('campoSite');
+    const duracaoSegundos = horaInicioPreenchimento
+      ? Math.round((Date.now() - horaInicioPreenchimento) / 1000)
+      : null;
+
+    const payload = {
+      ...dados,
+      _honeypot: campoArmadilha ? campoArmadilha.value : '',
+      _duracaoSegundos: duracaoSegundos
+    };
+
     // "no-cors" é necessário porque o Apps Script não retorna cabeçalhos
     // CORS explícitos; o envio funciona normalmente mesmo sem ler a resposta.
     fetch(GOOGLE_SHEETS_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(dados)
+      body: JSON.stringify(payload)
     }).catch((erro) => {
       console.error('Falha ao enviar dados para a planilha:', erro);
     });
@@ -650,6 +682,9 @@
     const numero = '554598369092';
     const mensagem = encodeURIComponent('Olá! Acabei de preencher a avaliação do meu imóvel e gostaria de receber minha estimativa.');
     whatsappBtn.href = `https://wa.me/${numero}?text=${mensagem}`;
+
+    // Dados não-identificáveis apenas, para respeitar a privacidade no Analytics
+    rastrearEvento('avaliacao_concluida', { cidade: dados.cidade, tipo_imovel: dados.tipo, objetivo: dados.objetivo });
 
     dispararConfete();
   }
@@ -747,6 +782,7 @@
       iniciarQuestionario();
     });
     closeChat.addEventListener('click', voltarParaHero);
+    whatsappBtn.addEventListener('click', () => rastrearEvento('clique_whatsapp'));
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!reduced) {
