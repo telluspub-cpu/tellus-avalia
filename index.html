@@ -106,6 +106,13 @@
   <section class="chat-section" id="chatSection">
     <div class="chat-frame">
 
+      <!-- Campo-armadilha (honeypot) contra bots de spam.
+           Fica invisível e inacessível para pessoas reais, mas bots
+           que preenchem formulários automaticamente costumam
+           preencher qualquer campo que encontrarem no HTML.
+           Se este campo vier preenchido, o envio é descartado. -->
+      <input type="text" id="campoSite" name="site_web" class="honeypot-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+
       <div class="chat-topbar">
         <div class="chat-topbar-info">
           <span class="chat-avatar">
