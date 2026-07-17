@@ -163,6 +163,7 @@
   const headerCta = document.getElementById('headerCta');
   const closeChat = document.getElementById('closeChat');
   const whatsappBtn = document.getElementById('whatsappBtn');
+  const floatingWhatsapp = document.getElementById('floatingWhatsapp');
 
   /* -------------------------------------------------------------------
      4. MOTOR DO CHAT
@@ -190,6 +191,7 @@
     heroSection.style.display = 'none';
     chatSection.classList.add('is-active');
     chatBody.innerHTML = '';
+    if (floatingWhatsapp) floatingWhatsapp.classList.add('is-hidden');
     rastrearEvento('inicio_avaliacao');
     renderPergunta(currentStepIndex);
   }
@@ -771,6 +773,7 @@
   function voltarParaHero() {
     chatSection.classList.remove('is-active');
     heroSection.style.display = '';
+    if (floatingWhatsapp) floatingWhatsapp.classList.remove('is-hidden');
   }
 
   function init() {
@@ -783,6 +786,13 @@
     });
     closeChat.addEventListener('click', voltarParaHero);
     whatsappBtn.addEventListener('click', () => rastrearEvento('clique_whatsapp'));
+
+    if (floatingWhatsapp) {
+      const numero = '554598369092';
+      const mensagem = encodeURIComponent('Olá! Gostaria de falar com um corretor da Tellus Imobiliária.');
+      floatingWhatsapp.href = `https://wa.me/${numero}?text=${mensagem}`;
+      floatingWhatsapp.addEventListener('click', () => rastrearEvento('clique_whatsapp_flutuante'));
+    }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!reduced) {
