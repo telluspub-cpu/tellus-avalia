@@ -434,6 +434,26 @@ a{ color:inherit; text-decoration:none; }
 .footer-copy{ font-size:.8rem; }
 
 /* ---------------------------------------------------------------------
+   8.1 BOTÃO FLUTUANTE DO WHATSAPP
+   --------------------------------------------------------------------- */
+.floating-whatsapp{
+  position:fixed; right:22px; bottom:22px; z-index:50;
+  width:58px; height:58px; border-radius:50%;
+  background:#22A559; color:var(--color-white);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 26px rgba(34,165,89,0.38), 0 2px 8px rgba(0,0,0,0.15);
+  transition:transform .25s var(--ease-out), box-shadow .25s var(--ease-out);
+  animation:whatsappPulse 2.6s ease-in-out infinite;
+}
+.floating-whatsapp:hover{ transform:scale(1.08); box-shadow:0 14px 32px rgba(34,165,89,0.46); }
+.floating-whatsapp.is-hidden{ opacity:0; pointer-events:none; transform:scale(.8); }
+
+@keyframes whatsappPulse{
+  0%,100%{ box-shadow:0 10px 26px rgba(34,165,89,0.38), 0 0 0 0 rgba(34,165,89,0.35); }
+  50%{ box-shadow:0 10px 26px rgba(34,165,89,0.38), 0 0 0 10px rgba(34,165,89,0); }
+}
+
+/* ---------------------------------------------------------------------
    9. RESPONSIVIDADE
    --------------------------------------------------------------------- */
 @media (max-width: 920px){
@@ -451,6 +471,7 @@ a{ color:inherit; text-decoration:none; }
   .chat-section{ padding:0; }
   .success-card{ padding:36px 22px; }
   .footer-inner{ flex-direction:column; align-items:flex-start; }
+  .floating-whatsapp{ width:52px; height:52px; right:16px; bottom:16px; }
 }
 
 /* ---------------------------------------------------------------------
